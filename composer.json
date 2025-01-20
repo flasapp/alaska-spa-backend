@@ -1,0 +1,6 @@
+{
+    "name": "flasapp/php-api",
+    "description": "php-api",
+    "type": "project",
+    "require": {}
+}
