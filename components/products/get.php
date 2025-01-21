@@ -1,14 +1,14 @@
 <?php 
 	// INCLUDE CLASS
-	require("classes/Categories.php");
+	require("classes/Products.php");
 
 	$conn 		= new Connection();
-	$obj		= new Category();
+	$obj		= new Product();
 	$params 	= $match['params'];
 	$name 		= $match['name'];
 	
-	if($name == 'categories-all'){
-		$response 	= $obj->getAllCategories($conn);
+	if($name == 'featured'){
+		$response 	= $obj->getFeaturedProducts($conn);
 		echo json_encode($response);
 	}else {
 		$response 	= "No name";

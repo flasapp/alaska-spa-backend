@@ -5,12 +5,12 @@
 //
 require("config/curl.php");
 
-class Category {
+class Setting {
 
-	private $model = "categories";
+	private $model = "settings";
 
 	// GET ALL USERES
-	public function getAllCategories($conn){
+	public function getNeigbourhoods($conn){
 		//ENVIO COUNT TOTAL
 		// $sql1 	= "SELECT COUNT(*) FROM ".$this->model." WHERE deleted = 0";
 		// $datos1 	= $conn->query($sql1);
@@ -20,17 +20,16 @@ class Category {
 		// 	$countItems = $datos1[0]["COUNT(*)"];
 		// };
 
-		$sql	="SELECT * FROM categorias WHERE estado = 1 ORDER BY nombre;";
+		$sql	="SELECT * FROM barrios WHERE estado = 1 ORDER BY title;";
 		$d 		= $conn->query($sql);
 		// CALLBACK
 		if(!empty($d)){
 			$d = array("data" => $d);
 			return $d;
 		} else {
-			return array("error" => "Error: no existen users.");
+			return array("error" => "Error: no existen Settingos en oferta.");
 		}
 	}
-
 	
 }
 

@@ -55,6 +55,10 @@ require('classes/Token.php');
 		$router->map('GET','/', 'components/home/index.php', 'home');
 		//ALL CATEGORIES
 		$router->map('GET','/categories', 'components/categories/get.php', 'categories-all');
+		//FEATURED PRODUCTS
+		$router->map('GET','/products/featured', 'components/products/get.php', 'featured');
+		//SETTINGS NEIGHBOURHOODS
+		$router->map('GET','/settings/neighbourhoods', 'components/settings/get.php', 'neighbourhoods');
 		// LOGIN
 		$router->map('POST','/login', 'components/users/post.php', 'user-login');
 		// NEW CLIENT
