@@ -10,6 +10,9 @@
 	if($name == 'categories-all'){
 		$response 	= $obj->getAllCategories($conn);
 		echo json_encode($response);
+	}else if($name == 'get-cat'){
+		$response 	= $obj->getCategoryById($conn, $params['id']);
+		echo json_encode($response);
 	}else {
 		$response 	= "No name";
 		echo json_encode($name);

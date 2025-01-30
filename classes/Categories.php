@@ -31,6 +31,19 @@ class Category {
 		}
 	}
 
+	public function getCategoryById($conn, $id){
+		
+		$sql	="SELECT * FROM categorias WHERE idCategoria = ".${id}.";";
+		$d 		= $conn->query($sql);
+		// CALLBACK
+		if(!empty($d)){
+			$d = array("data" => $d);
+			return $d;
+		} else {
+			return array("error" => "Error: no existe la categoria.");
+		}
+	}
+
 	
 }
 
