@@ -12,21 +12,21 @@ class Token {
 	}
 
 	public function checkToken($conn, $token){
-		$sql = "SELECT password, email FROM users";
+		$sql = "SELECT pass, mail FROM usuarios";
 		$d 	 = $conn->query($sql);
 		$cnt = count($d);
 		$find= false;
 
 		for ($i=0; $i < $cnt; $i++) {
-			if($token == $this->cryptoPsw($d[$i]["password"].$d[$i]["email"])){
+			if($token == $this->cryptoPsw($d[$i]["pass"].$d[$i]["mail"])){
 				$find = true;
-				$userId = $d[$i]["id"];
-				$userRole = $d[$i]["role"];
+				$userId = $d[$i]["idUsuario"];
+				// $userRole = $d[$i]["role"];
 				break;
 			}
 		}
 
-		return array("find_token" => $find, "userId" => $userId, "userRole" => $userRole);
+		return array("find_token" => $find, "userId" => $userId);
 	}
 
 }

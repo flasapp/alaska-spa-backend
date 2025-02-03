@@ -1,14 +1,11 @@
 <?php
 
-//
-// EXAMPLE CLASS
-//
 require("config/curl.php");
 
 class User {
-
 	private $model = "users";
 
+	
 	public function getStructure($conn,$column){
 		$sql	="SHOW COLUMNS FROM ".$this->model;
 		$d 		= $conn->query($sql);
@@ -21,123 +18,11 @@ class User {
 		}
 		return $r;
 	}
-
 	// CRYPTO FUNCTION
 	public function cryptoPsw($psw){
 		$key 	= "y0ur.k3y";
 		$ps 	= strtoupper(sha1($psw.$key));
 		return 	$ps;
-	}
-	// GET ALL USERES
-	public function getAllUsers($offset, $limit, $conn){
-		//ENVIO COUNT TOTAL
-		$sql1 	= "SELECT COUNT(*) FROM ".$this->model." WHERE deleted = 0";
-		$datos1 	= $conn->query($sql1);
-		if($datos1 == ""){
-			$countItems = 0;
-		} else {
-			$countItems = $datos1[0]["COUNT(*)"];
-		};
-
-		$sql	="SELECT `id`, `name`, `email`, `role` FROM ".$this->model." WHERE deleted = 0 LIMIT $limit OFFSET $offset ";
-		$d 		= $conn->query($sql);
-		// CALLBACK
-		if(!empty($d)){
-			$d = array("countItems" => $countItems, "data" => $d);
-			return $d;
-		} else {
-			return array("error" => "Error: no existen users.");
-		}
-	}
-	// GET ALL ADMINS
-	public function getAllAdmins($offset, $limit, $conn){
-		//ENVIO COUNT TOTAL
-		$sql1 	= "SELECT COUNT(*) FROM ".$this->model." WHERE role = 'ADMIN' AND deleted = 0";
-		$datos1 	= $conn->query($sql1);
-		if($datos1 == ""){
-			$countItems = 0;
-		} else {
-			$countItems = $datos1[0]["COUNT(*)"];
-		}
-
-		$sql	="SELECT `id`, `name`, `email`, `image`, `useWhatsapp` FROM ".$this->model." WHERE role = 'ADMIN' AND deleted = 0 LIMIT $limit OFFSET $offset ";
-		$d 		= $conn->query($sql);
-		// CALLBACK
-		if(!empty($d)){
-			$d = array("countItems" => $countItems, "data" => $d);
-			return $d;
-		} else {
-			return array("error" => "Error: no existen users.");
-		}
-	}
-	// GET ALL CLIENTS
-	public function getAllClients($offset, $limit, $name, $email, $conn){
-		//ENVIO COUNT TOTAL
-		$sql1 	= "SELECT COUNT(*) FROM ".$this->model." WHERE role = 'CLIENT'";
-		$sqlName = "";
-		$sqlEmail = "";
-		$sqlFilter = "";
-		if($name && $name!=""){
-			$sqlName = " AND name LIKE '%".$name."%'";
-			$sql1 = $sql1.$sqlName;
-		}
-		if($email && $email!=""){
-			$sqlEmail = " AND email LIKE '%".$email."%'";
-			$sql1 = $sql1.$sqlEmail;
-		}
-
-		$datos1 	= $conn->query($sql1);
-		if($datos1 == ""){
-			$countItems = 0;
-		} else {
-			$countItems = $datos1[0]["COUNT(*)"];
-		}
-
-		$sql	="SELECT `id`, `name`, `email`, `image`, `deleted`, `role`, `type` FROM ".$this->model." WHERE role = 'CLIENT'";
-		$sqlName = "";
-		$sqlEmail = "";
-		if($name && $name!=""){
-			$sqlName = " AND name LIKE '%".$name."%'";
-			$sql = $sql.$sqlName;
-		}
-		if($email && $email!=""){
-			$sqlEmail = " AND email LIKE '%".$email."%'";
-			$sql = $sql.$sqlEmail;
-		}
-		$sql = $sql." LIMIT $limit OFFSET $offset ";
-		//
-		// $d = array("countItems" => $countItems,"sql" => $sql, "name" => $name, "email" => $email);
-		// return $d;
-		//
-		$d 		= $conn->query($sql);
-		// CALLBACK
-		if(!empty($d)){
-			$d = array("countItems" => $countItems, "data" => $d, "name" => $name, "email" => $email);
-			return $d;
-		} else {
-			return array("error" => "Error: no existen users.");
-		}
-	}
-	// GET INT CLIENTS
-	public function getIntClients($offset, $limit, $conn){
-		//ENVIO COUNT TOTAL
-		$sql1 	= "SELECT COUNT(*) FROM ".$this->model;
-		$datos1 	= $conn->query($sql1);
-		if($datos1 == ""){
-			$countItems = 0;
-		} else {
-			$countItems = $datos1[0]["COUNT(*)"];
-		}
-
-		$sql	="SELECT `id`, `name`, `email`, `image`, `deleted`, `role`, `type` FROM ".$this->model." WHERE role = 'CLIENT' AND type = 'INT' LIMIT $limit OFFSET $offset ";
-		$d 		= $conn->query($sql);
-		// CALLBACK
-		if(!empty($d)){
-			$d = array("countItems" => $countItems, "data" => $d);
-			return $d;
-		} else {
-			return array("error" => "Error: no existen users.");
-		}
 	}
 	// GET USER BY ID
 	public function getUserById($conn,$id){
@@ -151,170 +36,59 @@ class User {
 			return array("error" => "Error: no se encuentra el user.");
 		}
 	}
-
-	public function googleLogin($conn, $user){
+	//Login for e-commerce
+	public function loginFrontend($conn, $user){
 		// CLEAR FIELDS
-		$user["email"] 		= mysql_real_escape_string($user["email"]);
-		$user["password"] 	= $this->cryptoPsw(mysql_real_escape_string($user["password"]));
-		$sql	="SELECT `id`, `name`, `email`, `image`, `role`, `googleId`, `password` FROM ".$this->model." WHERE email='$user[email]' AND password = '$user[password]' AND deleted = 0 AND googleId = '$user[googleId]'";
-		$d 		= $conn->query($sql);
-
-		// CALLBACK
-		if(!empty($d)){
-			// SET TOKEN
-			$d[0]["token"] =  $this->cryptoPsw($d[0]["password"].$d[0]["email"]);
-			unset($d[0]["password"]);
-			return array("response" => $d[0]);
+		$pass = md5($user[pass]);
+		//$ci = $user[ci];
+		
+		$sql 	= "SELECT * FROM usuarios WHERE mail = '$user[mail]' AND pass = '$pass'";
+		$datos 	= $conn->query($sql);
+		if($datos == ""){
+			$d = array("response" => "err: to get user by ID:");	
+			return $d;
 		} else {
-			return array("error" => "NO_GOOGLE_USER", "sql" =>$sql );
+			$datos[0]["token"] =  $this->cryptoPsw($d[0]["pass"].$d[0]["mail"]);
+			unset($datos[0]["pass"]);
+			return $datos[0];	
 		}
 	}
-
-	public function facebookLogin($conn, $user){
-		// CLEAR FIELDS
-		$user["email"] 		= mysql_real_escape_string($user["email"]);
-		$user["password"] 	= $this->cryptoPsw(mysql_real_escape_string($user["password"]));
-		$sql	="SELECT `id`, `name`, `email`, `image`, `role`, `facebookId`, `password` FROM ".$this->model." WHERE email='$user[email]' AND password = '$user[password]' AND deleted = 0 AND facebookId = '$user[facebookId]'";
-		$d 		= $conn->query($sql);
-
-		// CALLBACK
-		if(!empty($d)){
-			// SET TOKEN
-			$d[0]["token"] =  $this->cryptoPsw($d[0]["password"].$d[0]["email"]);
-			unset($d[0]["password"]);
-			return array("response" => $d[0]);
-		} else {
-			return array("error" => "NO_FACEBOOK_USER" );
+	//Signup for e-commerce
+	public function signupFrontend($conn, $user){
+		//Check every field is on user
+		if (empty($user['nomUsuario']) || empty($user['apellido']) || empty($user['tel']) || empty($user['mail']) || empty($user['pass']) || empty($user['fechaAlta'])) {
+			return array("error" => "Faltan datos", "code" => "MISSING_DATA");
 		}
-	}
 
-	public function login($conn, $user){
-		// CLEAR FIELDS
-		$user["email"] 		= mysql_real_escape_string($user["email"]);
-		$user["password"] 	= $this->cryptoPsw(mysql_real_escape_string($user["password"]));
-		$sql	="SELECT `id`, `name`, `email`, `image`, `role`, `googleId`, `password` FROM ".$this->model." WHERE email='$user[email]' AND password = '$user[password]' AND deleted = 0";
-		$d 		= $conn->query($sql);
-
-		// CALLBACK
-		if(!empty($d)){
-			// SET TOKEN
-			$d[0]["token"] =  $this->cryptoPsw($d[0]["password"].$d[0]["email"]);
-			unset($d[0]["password"]);
-			return array("response" => $d[0]);
-		} else {
-			return array("error" => "Error: email o clave incorrecta." );
-		}
-	}
-
-	public function insertUser($conn,$user){
-		//Hash password
-		if (!empty($user["password"]) || $user["password"]!="" ) {
-        	$user["password"]=$this->cryptoPsw($user["password"]);
-    	}
-
-    	$sqlExist =  "SELECT * FROM users WHERE email = '$user[email]'";
+		//First of all check if the email already exist
+		$sqlExist =  "SELECT * FROM usuarios WHERE mail = '$user[mail]'";
     	$dataExist = $conn->query($sqlExist);
 
-    	if (empty($dataExist)) {
-    		$md   	 = $this->model;
-			$head 	 ="INSERT INTO ".$this->model;
-			$insert .="(deleted, createdAt, ";
-			$body 	.=" VALUES (0, CURRENT_TIMESTAMP,";
-			$last 	 = count($user);
-
-			$ind 	 = 1;
-			foreach ($user as $key => $vle) {
-				if($this->getStructure($conn,$key)){
-					if($ind==$last){
-						$insert .=$key;
-						$body 	.="'".$vle."'";
-					} else {
-						$insert .=$key.", ";
-						$body 	.="'".$vle."', ";
-					}
-				}
-				$ind++;
-			}
-
-			$insert .=")";
-			$body 	.=")";
-			$sql 	 = $head.$insert.$body;
-			$d 		 = $conn->query($sql);
-
-			if(empty($d)){
-				return array("response" => $d);
-			} else {
-				return array("error" => "Error: al ingresar el user.", "sql" => $sql);
-			}
-    	}else{
-    		return array("error" => "Ya existe un usuario con ese email");
+    	if (!empty($dataExist)) {
+    		return array("error" => "Ya existe un usuario con ese email", "code" => "USER_EXISTS");
     	}
 
+		//If doeasnt exist insert into tbale
+		$user['pass'] = md5($user['pass']);
+		$sql 	= "INSERT INTO usuarios 
+					(nomUsuario, apellido, tel, mail, pass, fechaAlta, rol, estado)
+					VALUES 
+					('$user[nomUsuario]', '$user[apellido]', '$user[tel]', '$user[mail]', '$user[pass]', '$user[fechaAlta]', 0, 1)";
+		
+		$datos 	= $conn->query($sql);
+		if($datos == ""){
+			$d = array("response" => "Ok", success => true);
+			return $d;
+		} else {
+			$d = array("response" => "err: to add client");
+			return $d;
+		}
+		
 
 	}
+	//Update user Profile
+	public function updateUserProfile($conn, $user){
 
-	public function insertClient($conn,$user){
-		//Email not NULL verification
-		if ($user["email"]=="" || is_null($user["email"])) {
-			return array("error" => "Email incorrecto");
-		}
-
-		if ($user["name"]=="" || is_null($user["name"])) {
-			return array("error" => "Nombre incorrecto");
-		}
-		//Hash password
-		if (!empty($user["password"]) || $user["password"]!="" ) {
-        	$user["password"]=$this->cryptoPsw($user["password"]);
-    	}
-
-    	$sqlExist =  "SELECT * FROM users WHERE email = '$user[email]'";
-    	$dataExist = $conn->query($sqlExist);
-
-    	if (empty($dataExist)) {
-    		$md   	 = $this->model;
-			$head 	 ="INSERT INTO ".$this->model;
-			$insert .="(deleted, createdAt, role, type,";
-			$body 	.=" VALUES (0, CURRENT_TIMESTAMP, 'CLIENT', 'EXT', ";
-			$last 	 = count($user);
-
-			$ind 	 = 1;
-			foreach ($user as $key => $vle) {
-				if($this->getStructure($conn,$key)){
-					if($ind==$last){
-						$insert .=$key;
-						$body 	.="'".$vle."'";
-					} else {
-						$insert .=$key.", ";
-						$body 	.="'".$vle."', ";
-					}
-				}
-				$ind++;
-			}
-
-			$insert .=")";
-			$body 	.=")";
-			$sql 	 = $head.$insert.$body;
-			$d 		 = $conn->query($sql);
-
-			if(empty($d)){
-				return array("response" => $d);
-				// $user["password"] 	= $this->login()
-			} else {
-				return array("error" => "Error: al ingresar el user.", "sql" => $sql);
-			}
-    	}else{
-    		return array("error" => "Ya existe un usuario con ese email");
-    	}
-
-
-	}
-
-	public function updateUser($conn, $user){
-
-		// $sqlExist =  "SELECT * FROM users WHERE email = '$user[email]'";
-  //   	$dataExist = $conn->query($sqlExist);
-
-  //   	if (empty($dataExist)) {
 			$sql = "UPDATE ".$this->model." SET name = '$user[name]', role = '$user[role]', image = '$user[image]', type = '$user[type]', useWhatsapp = '$user[useWhatsapp]'";
 			//Hash password
 			if (!empty($user["password"]) || $user["password"]!="" ) {
@@ -335,11 +109,9 @@ class User {
 			} else {
 				return array("error" => "Error: al actualizar el user.", "sql" => $sql);
 			}
-		// }else{
-  //   		return array("error" => "Ya existe un usuario con ese email");
-  //   	}
-	}
 
+	}
+	//Delete (inactivate) user
 	public function deleteUser($conn, $id){
 
 		$sql = "UPDATE ".$this->model." SET deleted = 1, updateAt = CURRENT_TIMESTAMP WHERE id='$id'";
@@ -351,73 +123,7 @@ class User {
 			return array("error" => "Error: al actualizar el user.", "sql" => $sql);
 		}
 	}
-
-	public function getScheduleByAdmin($conn, $admin){
-		$sql	="SELECT * FROM schedules WHERE adminId='$admin'";
-		$d 		= $conn->query($sql);
-
-		// CALLBACK
-		if(!empty($d)){
-			return $d;
-		} else {
-			return array("error" => "Error: no se encontraron horarios para este usuario.");
-		}
-	}
-
-	public function getAllSchedulesByDays($conn, $initDay, $finalDay){
-		//Generate an array with $initDay and $finalDay to create an SQL query with the days IN
-		$days = [];
-		if ($initDay <= $finalDay) {
-			// Si inday es menor o igual a endday, simplemente genera un rango desde inday hasta endday
-			for ($day = $initDay; $day <= $finalDay; $day++) {
-				$days[] = $day;
-			}
-		} else {
-			// Si inday es mayor que endday, genera dos rangos y los concatena:
-			// desde inday hasta 6, y desde 0 hasta endday
-			for ($day = $initDay; $day <= 6; $day++) {
-				$days[] = $day;
-			}
-			for ($day = 0; $day <= $finalDay; $day++) {
-				$days[] = $day;
-			}
-		}
-		$days = implode("','", $days);
-		$sql	="SELECT * FROM schedules WHERE day IN ('$days')";
-		// $sql	="SELECT * FROM schedules WHERE day='$initDay' OR day='$finalDay'";
-		$d 		= $conn->query($sql);
-
-		// CALLBACK
-		if(!empty($d)){
-			return $d;
-		} else {
-			return array("error" => "Error: no se encontraron horarios para este usuario.");
-		}
-	}
-
-	public function newScheduleByAdmin($conn, $item){
-		$md   	 = "schedules";
-		$sql 	 ="INSERT INTO schedules (adminId, day, hour) VALUES ('$item[adminId]', '$item[day]', '$item[hour]')";
-		
-		$d 	= $conn->query($sql);
-		// CALLBACK
-		if(empty($d)){
-			return array("response" => $sql, "item" => $item);
-		} else {
-			return array("error" => "Error: al actualizar el schedule.", "sql" => $sql);
-		}
-	}
-	public function deleteSchedule($conn, $id){
-		$sql 	 ="DELETE FROM schedules WHERE id = ".$id;
-		
-		$d 	= $conn->query($sql);
-		// CALLBACK
-		if(empty($d)){
-			return array("response" => $sql, "item" => $item);
-		} else {
-			return array("error" => "Error: al actualizar el schedule.", "sql" => $sql);
-		}
-	}
+	//Request password code
 	public function requestCodePassword($conn, $data){
 		$email = $data["email"];
 		if($email == "" || is_null($email)){
@@ -480,7 +186,7 @@ class User {
 			return array("error" => "Ha ocurrido un error.");
 		}
 	}
-
+	//Reset password
 	public function resetPassword($conn, $params){
 		$token = $params["token"];
 		$email = $params["email"];
@@ -512,6 +218,7 @@ class User {
 			return array("error" => "El código ha expirado.");
 		}
 	}
+
 }
 
 ?>
