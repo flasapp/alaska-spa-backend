@@ -60,8 +60,14 @@ require('classes/Token.php');
 		$router->map('GET','/settings/neighbourhoods', 'components/settings/get.php', 'neighbourhoods');
 		//ORDERS BY USER
 		$router->map('GET','/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user');
+		//ORDERS BY ID
+		$router->map('GET','/order-user/[i:id]/[a:user]', 'components/orders/get.php', 'order-by-user');
+		//UPDATE PROFILE
+		$router->map('POST','/update-profile', 'components/users/put.php', 'update-profile');
 
-
+		
+		//NEW ORDER
+		$router->map('POST','/order-new', 'components/orders/post.php', 'order-new');
 		// LOGIN
 		$router->map('POST','/login', 'components/users/post.php', 'user-login');
 		// LOGIN

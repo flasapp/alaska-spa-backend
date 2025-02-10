@@ -5,7 +5,6 @@ require("config/curl.php");
 class User {
 	private $model = "users";
 
-	
 	public function getStructure($conn,$column){
 		$sql	="SHOW COLUMNS FROM ".$this->model;
 		$d 		= $conn->query($sql);
@@ -218,7 +217,38 @@ class User {
 			return array("error" => "El código ha expirado.");
 		}
 	}
-
+	//Update profile
+	public function updateProfile($conn, $userInfo){
+		$sql = "UPDATE usuarios 
+        SET nomUsuario = '" . $userInfo['name'] . "', 
+            apellido = '" . $userInfo['lastName'] . "', 
+            mail = '" . $userInfo['email'] . "', 
+            tel = '" . $userInfo['phone'] . "', 
+            calle = '" . $userInfo['address']['street'] . "', 
+            numero = '" . $userInfo['address']['number'] . "', 
+            apto = '" . $userInfo['address']['depto'] . "', 
+            esquina = '" . $userInfo['address']['corner'] . "', 
+            idBarrio = '" . $userInfo['address']['neighbourhood'] . "'
+        WHERE idUsuario = '" . $userInfo['id'] . "'";
+		// $sql = "UPDATE 
+		// 			usuarios SET 
+		// 			nomUsuario = '$userInfo[name]', 
+		// 			apellido = '$userInfo[lastName]', 
+		// 			mail = '$userInfo[email]', 
+		// 			tel = '$userInfo[phone]', 
+		// 			calle = '$userInfo[address][street]', 
+		// 			numero = '$userInfo[address][number]', 
+		// 			apto = '$userInfo[address][depto]', 
+		// 			esquina = '$userInfo[address][corner]', 
+		// 			idBarrio = '$userInfo[address][neighbourhood]'
+		// 			WHERE idUsuario = '$userInfo[id]'";
+		$d 	= $conn->query($sql);
+		// CALLBACK
+		if(empty($d)){
+			return array("response" => "OK", "user" => $d, success => true);
+		} else {
+			return array("error" => "Error: al actualizar el user.", "sql" => $sql);
+		}
+	}
 }
-
 ?>
