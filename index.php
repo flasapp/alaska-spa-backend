@@ -58,6 +58,8 @@ require('classes/Token.php');
 		$router->map('GET','/products-by-name/[a:name]', 'components/products/get.php', 'get-by-name');
 		//SETTINGS NEIGHBOURHOODS
 		$router->map('GET','/settings/neighbourhoods', 'components/settings/get.php', 'neighbourhoods');
+		//SETTINGS CONFIGS
+		$router->map('GET','/settings/configs', 'components/settings/get.php', 'configs');
 		//ORDERS BY USER
 		$router->map('GET','/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user');
 		//ORDERS BY ID
@@ -76,6 +78,7 @@ require('classes/Token.php');
 		$router->map('POST','/user-new', 'components/users/post.php', 'client-new');
 		// REQUEST NEW PASSWORD
 		$router->map('POST','/request-code-password', 'components/users/post.php', 'request-code-password');
+
 		// REQUEST NEW PASSWORD
 		$router->map('POST','/change-password', 'components/users/post.php', 'change-password');
 

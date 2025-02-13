@@ -30,6 +30,16 @@ class Setting {
 			return array("error" => "Error: no existen Settingos en oferta.");
 		}
 	}
+	public function getSettings($conn){
+		$sql 	= "SELECT * FROM configuraciones WHERE id='1'";
+		$datos 	= $conn->query($sql);
+		if($datos == ""){
+			$d = array("response" => "err: to get config by ID:");
+			return $d;
+		} else {
+			return $datos[0];	
+		}
+	}
 	
 }
 
