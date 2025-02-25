@@ -1,18 +1,15 @@
 <?php
 
-require('config/conn.php');
-require('classes/AltoRouter.php');
-require('classes/Token.php');
-
+	require('config/conn.php');
+	require('classes/AltoRouter.php');
+	require('classes/Token.php');
+	require('config/env.php');
 
 	// CALL OBJS
 	$router 	= new AltoRouter();
 	$conn 		= new Connection();
 	$objToken	= new Token();
-	//DEV
-	$router->setBasePath('/backend/api-spa-dev');
-	//PD
-	// $router->setBasePath('/backend/api-spa');
+	$router->setBasePath(CONTEXT);
 
 	//Protected Routes
 	if($_SERVER["HTTP_TOKEN"]){

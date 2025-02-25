@@ -1,10 +1,9 @@
 <?php
-
-require("config/curl.php");
+require dirname(__DIR__) . '/config/env.php';
 
 class User {
-	private $model = "users";
-
+	private $model = "usuarios";
+	//Get structure of db table
 	public function getStructure($conn,$column){
 		$sql	="SHOW COLUMNS FROM ".$this->model;
 		$d 		= $conn->query($sql);
@@ -85,31 +84,6 @@ class User {
 		
 
 	}
-	//Update user Profile
-	public function updateUserProfile($conn, $user){
-
-			$sql = "UPDATE ".$this->model." SET name = '$user[name]', role = '$user[role]', image = '$user[image]', type = '$user[type]', useWhatsapp = '$user[useWhatsapp]'";
-			//Hash password
-			if (!empty($user["password"]) || $user["password"]!="" ) {
-	        	$user["password"]=$this->cryptoPsw($user["password"]);
-	        	$sql .=", password = '$user[password]'";
-	    	};
-	    	if($user["deleted"]==0){
-				$sql .=", deleted = 0";
-	    	}
-	    	if($user["deleted"]==1){
-				$sql .=", deleted = 1";
-	    	}
-			$sql .=", updateAt = CURRENT_TIMESTAMP WHERE id='$user[id]'";
-			$d 	= $conn->query($sql);
-			// CALLBACK
-			if(empty($d)){
-				return array("response" => $sql, "user" => $user);
-			} else {
-				return array("error" => "Error: al actualizar el user.", "sql" => $sql);
-			}
-
-	}
 	//Delete (inactivate) user
 	public function deleteUser($conn, $id){
 
@@ -140,17 +114,16 @@ class User {
 			$sqlToken = "INSERT INTO reset_password (userId, token, createdAt) VALUES ('".$client["idUsuario"]."', '".$code."', CURRENT_TIMESTAMP)";
 			$dToken = $conn->query($sqlToken);
 			if(empty($dToken)){
-				//Then we should send an email to the user with a link to reset the password with the token
-				$site_url = "https://spa.alaskacongelados.com.uy";
 				//ENVIAR MAIL CLIENTE
 				$email_to = $client["mail"];
 				$email_subject = "Cambio de contraseña";
-				$header_body_email = "<div style='max-width: 600px; margin: auto; font-family: Arial, sans-serif; background: #f9f9f9; border-radius: 10px; overflow: hidden;'><div style='background: linear-gradient(135deg, #6a11cb, #2575fc); color: #fff; text-align: center; padding: 25px;'><h1 style='margin: 0; font-size: 24px;'>Cambio de contraseña</h1></div><div style='padding: 20px; color: #333; text-align: center;'><p style='font-size: 18px;'>Código generado satisfactoriamente. 🎉</p><p style='font-size: 16px;'>Haz click en el link debajo e ingresa el código.</p>";
+				$header_body_email = "<div style='max-width: 600px; margin: auto; font-family: Arial, sans-serif; background: #f9f9f9; border-radius: 10px; overflow: hidden;'><div style='background: linear-gradient(135deg, #6a11cb, #2575fc); color: #fff; text-align: center; padding: 25px;'><h1 style='margin: 0; font-size: 24px;'>Cambio de contraseña</h1></div><div style='padding: 20px; color: #333; text-align: center;'><p style='font-size: 18px;'>Código generado satisfactoriamente. 🎉</p><p style='font-size: 16px;'>Haz click en el link botón e ingresa el código.</p>";
 					$email_message = $header_body_email;
 					// $email_message .= "<br>";
-					$email_message .= "<div style='background: #eef2ff; padding: 15px; border-radius: 8px; margin: 20px auto; display: inline-block;'><p style='margin: 0; font-size: 16px;'><strong>Código generado:</strong>".$code."</p></div>";
-						$email_message .= "<a href='".$site_url."/recuperar-usuario/".$client["mail"]."' target='_blank' style='background: #6a11cb; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 5px; display: inline-block; font-size: 16px; margin-top: 15px;'>Ir a cambiar contraseña</a>";
+					$email_message .= "<div style='background: #eef2ff; padding: 15px; border-radius: 8px; margin: 20px auto; display: inline-block;'><p style='margin: 0; font-size: 16px;'><strong>Código:</strong> ".$code." </p></div>";
+						$email_message .= "<a href='".SITE_URL."/recuperar-usuario/".$client["mail"]."' target='_blank' style='background: #6a11cb; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 5px; display: inline-block; font-size: 16px; margin-top: 15px;'>Cambiar contraseña</a>";
 						$email_message .="<p style='margin-top: 20px; font-size: 14px; color: #666;'>Ya estás solamente a un paso de poder cambiar tu contraseña y continuar comprando 😀</p>";
+						$email_message .="<p style='margin-top: 20px; font-size: 12px; color: #808080;'>⚠️ Recuerda que el código es válido por una hora ⚠️</p>";
 					$email_message .= "</div>"; //TO CLOSE
 				$email_message .= "<div style='background: #eef2ff; text-align: center; padding: 15px; font-size: 14px; color: #666;'>© 2025 Alaska Congelados | Todos los derechos reservados</div></div>";
 				$headers = "MIME-Version: 1.0" . "\r\n";
@@ -173,7 +146,7 @@ class User {
 	//Reset password
 	public function resetPassword($conn, $params){
 		$token = $params["token"];
-		$email = $params["email"];
+		$mail = $params["mail"];
 		$password = $params["password"];
 		//Check if the token is valid
 		$sql	="SELECT * FROM reset_password WHERE token='$token' AND createdAt > DATE_SUB(NOW(), INTERVAL 1 HOUR)";
@@ -182,7 +155,8 @@ class User {
 		if(!empty($d)){
 			$reset = $d[0];
 			//Update the user password
-			$sql = "UPDATE users SET password = '".$this->cryptoPsw($password)."' WHERE email = '".$email."'";
+			$passHashed = md5($password);
+			$sql = "UPDATE usuarios SET pass = '".$passHashed."' WHERE mail = '".$mail."'";
 			$d 	= $conn->query($sql);
 			// CALLBACK
 			if(empty($d)){

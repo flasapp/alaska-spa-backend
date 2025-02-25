@@ -1,4 +1,5 @@
 <?php
+require("config/env.php");
 
 class Order {
 	private $model = "users";
@@ -137,8 +138,6 @@ class Order {
 					die("Err: en insertar el detalle de pedido en la base de datos");
 				}
 
-				$site_url = "https://spa.alaskacongelados.com.uy";
-
 				//ENVIAR MAIL AL CLIENTE
 				$email_to = $usuario["mail"];
 				$email_subject = "Compra web";
@@ -146,7 +145,7 @@ class Order {
 					$email_message = $header_body_email;
 					// $email_message .= "<br>";
 					$email_message .= "<div style='background: #eef2ff; padding: 15px; border-radius: 8px; margin: 20px auto; display: inline-block;'><p style='margin: 0; font-size: 16px;'><strong>Número de pedido:</strong> #".$idPedido."</p></div>";
-						$email_message .= "<a href='".$site_url."/pedidos/".$idPedido."/".$usuario["idUsuario"]."' target='_blank' style='background: #6a11cb; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 5px; display: inline-block; font-size: 16px; margin-top: 15px;'>Ver mi pedido</a>";
+						$email_message .= "<a href='".SITE_URL."/pedidos/".$idPedido."/".$usuario["idUsuario"]."' target='_blank' style='background: #6a11cb; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 5px; display: inline-block; font-size: 16px; margin-top: 15px;'>Ver mi pedido</a>";
 						$email_message .="<p style='margin-top: 20px; font-size: 14px; color: #666;'>Si tienes alguna pregunta, contáctanos en <a href='mailto:alaskacongelados@gmail.com' style='color: #6a11cb; text-decoration: none;'>alaskacongelados@gmail.com</a></p>";
 					$email_message .= "</div>"; //TO CLOSE
 				$email_message .= "<div style='background: #eef2ff; text-align: center; padding: 15px; font-size: 14px; color: #666;'>© 2025 Alaska Congelados | Todos los derechos reservados</div></div>";

@@ -1,10 +1,5 @@
 <?php
 
-//
-// EXAMPLE CLASS
-//
-require("config/curl.php");
-
 class Product {
 
 	private $model = "categories";

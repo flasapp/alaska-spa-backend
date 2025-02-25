@@ -2,3 +2,5 @@ config/
 /config
 /images
 images/
+sftp-config.json
+sftp.json
