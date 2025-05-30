@@ -140,7 +140,7 @@ class User {
 				return array("error" => "Error: al crear el token.", "sql" => $sqlToken);
 			}
 		} else {
-			return array("error" => "Ha ocurrido un error.");
+			return array("error" => "Ha ocurrido un error.", "sql" => $sql);
 		}
 	}
 	//Reset password
