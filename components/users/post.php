@@ -11,6 +11,9 @@
 	if($name == 'user-login'){
 		$response = $objUsr->loginFrontend($conn,$params);
 		echo json_encode($response);
+	}else if($name == 'admin-login'){
+		$response = $objUsr->loginAdmin($conn,$params);
+		echo json_encode($response);
 	}else if($name == 'user-signup'){
 		$response = $objUsr->signupFrontend($conn,$params);
 		echo json_encode($response);

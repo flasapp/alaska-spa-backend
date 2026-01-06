@@ -24,11 +24,17 @@
 		}
 		
 
+		
+
 	} else {
 		if($name == 'all-schedules-by-days'){
 			$initDay 		= $_GET['initDay'];
 			$finalDay 		= $_GET['finalDay'];
 			$response 	= $objUsr->getAllSchedulesByDays($conn, $initDay, $finalDay);
+			echo json_encode($response);
+		} elseif($name == 'users-all'){
+			$params = $_GET;
+			$response = $objUsr->getAll($conn, $params);
 			echo json_encode($response);
 		}else{
 			echo json_encode( array("response" => 'err') );

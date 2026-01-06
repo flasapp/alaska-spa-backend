@@ -51,6 +51,22 @@ class User {
 			return $datos[0];	
 		}
 	}
+	//Login for admin
+	public function loginAdmin($conn, $user){
+		// CLEAR FIELDS
+		$pass = md5($user['password']);
+		
+		$sql 	= "SELECT mail as email, nomUsuario as name, apellido as lastName, tel as phone, idUsuario as userId, estado as status, rol as role, pass FROM usuarios WHERE mail = '$user[email]' AND pass = '$pass' AND rol = 1 AND estado = 1";
+		$datos 	= $conn->query($sql);
+		if($datos == "" || empty($datos)){
+			$d = array("response" => "err: invalid admin credentials or access denied", "error" => true);	
+			return $d;
+		} else {
+			$datos[0]["token"] =  $this->cryptoPsw($datos[0]["pass"].$datos[0]["email"]);
+			unset($datos[0]["pass"]);
+			return $datos[0];	
+		}
+	}
 	//Signup for e-commerce
 	public function signupFrontend($conn, $user){
 		//Check every field is on user
@@ -208,6 +224,63 @@ class User {
 		} else {
 			return array("error" => "Error: al actualizar el user.", "sql" => $sql);
 		}
+	}
+	public function updateUser($conn, $id, $data){
+		$updates = [];
+
+		if(isset($data['name'])) $updates[] = "nomUsuario = '".$data['name']."'";
+		if(isset($data['lastName'])) $updates[] = "apellido = '".$data['lastName']."'";
+		if(isset($data['email'])) $updates[] = "mail = '".$data['email']."'";
+		if(isset($data['phone'])) $updates[] = "tel = '".$data['phone']."'";
+		if(isset($data['role'])) $updates[] = "rol = '".$data['role']."'";
+		if(isset($data['status'])) $updates[] = "estado = '".$data['status']."'";
+
+		if(isset($data["password"]) && $data["password"] != "" && !empty($data["password"])){
+			$passHashed = md5($data["password"]);
+			$updates[] = "pass = '$passHashed'";
+		}
+
+		if (empty($updates)) {
+			return array("response" => "OK", "message" => "No fields to update", "success" => true);
+		}
+
+		$sql = "UPDATE ".$this->model." SET " . implode(', ', $updates) . " WHERE idUsuario = '$id'";
+		
+		$d = $conn->query($sql);
+		
+		if(empty($d)){
+			return array("response" => "OK", "success" => true);
+		} else {
+			return array("error" => "Error al actualizar el usuario.", "sql" => $sql);
+		}
+	}
+
+	//Get All Users
+	public function getAll($conn, $params){
+		$limit 	= (isset($params["limit"])) ? $params["limit"] : 10;
+		$offset = (isset($params["offset"])) ? $params["offset"] : 0;
+		$whereBase = "WHERE 1=1";
+
+		if(isset($params["where"]["name"]) && $params["where"]["name"] != ""){
+			$whereBase .= " AND (nomUsuario LIKE '%".$params["where"]["name"]."%' OR apellido LIKE '%".$params["where"]["name"]."%' OR CONCAT(nomUsuario, ' ', apellido) LIKE '%".$params["where"]["name"]."%')";
+		}
+		if(isset($params["where"]["email"]) && $params["where"]["email"] != ""){
+			$whereBase .= " AND mail LIKE '%".$params["where"]["email"]."%'";
+		}
+
+		// Count Items
+		$sqlCount = "SELECT COUNT(*) as total FROM ".$this->model." ".$whereBase;
+		$countData = $conn->query($sqlCount);
+		$total = (isset($countData[0]["total"])) ? $countData[0]["total"] : 0;
+
+		// Get Items
+		$sql = "SELECT idUsuario as id, nomUsuario as name, apellido as lastName, mail as email, rol as role, estado as status, tel as phone FROM ".$this->model." ".$whereBase." LIMIT $offset, $limit";
+		$d 	 = $conn->query($sql);
+		if ($d == "") {
+			$d = array();
+		}
+		
+		return array("data" => $d, "count" => $total);
 	}
 }
 ?>

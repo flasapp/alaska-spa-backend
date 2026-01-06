@@ -11,7 +11,11 @@
 	if($name == 'update-profile'){
 		$response = $objUsr->updateProfile($conn, $body);
 		echo json_encode($response);
-	}else {
+	} else if($name == 'update-user'){
+		$id = $match['params']['id'];
+		$response = $objUsr->updateUser($conn, $id, $body);
+		echo json_encode($response);
+	} else {
 		echo json_encode( array("response" => 'err post users') );
 	}
 
