@@ -282,5 +282,48 @@ class User {
 		
 		return array("data" => $d, "count" => $total);
 	}
+	public function createUser($conn, $user){
+		//Check required fields
+		if (empty($user['name']) || empty($user['lastName']) || empty($user['email'])) {
+			return array("error" => "Faltan datos obligatorios", "code" => "MISSING_DATA");
+		}
+
+		//Check if email exists
+		$sqlExist =  "SELECT * FROM usuarios WHERE mail = '".$user['email']."'";
+    	$dataExist = $conn->query($sqlExist);
+
+    	if (!empty($dataExist)) {
+    		return array("error" => "Ya existe un usuario con ese email", "code" => "USER_EXISTS");
+    	}
+
+		$pass = (isset($user['password']) && !empty($user['password'])) ? md5($user['password']) : md5('123456'); // Default password if needed? Or error? I'll assume it might be optional and set a default or just fail. 
+        // Based on request "same logic ... than PUT", PUT allows password update. login/signup requires password.
+        // Let's assume password is required or I'll generate a random one? 
+        // signupFrontend requires password. 
+        // I will make it required if I can, but let's look at the check above. I didn't check password in empty().
+        // I will add password to empty check.
+
+        if(empty($user['password'])){
+             return array("error" => "Faltan datos obligatorios (password)", "code" => "MISSING_DATA");
+        }
+        $pass = md5($user['password']);
+
+        $role = isset($user['role']) ? $user['role'] : 0;
+        $status = isset($user['status']) ? $user['status'] : 1;
+        $phone = isset($user['phone']) ? $user['phone'] : '';
+        $fechaAlta = date("Y-m-d H:i:s");
+
+		$sql 	= "INSERT INTO usuarios 
+					(nomUsuario, apellido, tel, mail, pass, fechaAlta, rol, estado)
+					VALUES 
+					('".$user['name']."', '".$user['lastName']."', '$phone', '".$user['email']."', '$pass', '$fechaAlta', '$role', '$status')";
+		
+		$d 	= $conn->query($sql);
+		if($d == ""){
+			return array("response" => "OK", "success" => true);
+		} else {
+			return array("error" => "Error al crear el usuario", "sql" => $sql);
+		}
+	}
 }
 ?>

@@ -71,6 +71,15 @@
 		$router->map('GET','/users', 'components/users/get.php', 'users-all');
 		// UPDATE USER (Admin)
 		$router->map('PUT', '/users/[i:id]', 'components/users/put.php', 'update-user');
+		// CREATE USER (Admin)
+		$router->map('POST', '/users', 'components/users/post_admin.php', 'create-user-admin');
+
+		// Tasks CRUD
+		$router->map('GET', '/tasks', 'components/tasks/get.php', 'tasks-all');
+		$router->map('POST', '/tasks', 'components/tasks/post.php', 'task-create');
+		$router->map('PUT', '/tasks/[i:id]', 'components/tasks/put.php', 'task-update');
+		$router->map('DELETE', '/tasks/[i:id]', 'components/tasks/delete.php', 'task-delete');
+		
 		//Orders by user
 		$router->map('GET','/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user');
 		// match current request
