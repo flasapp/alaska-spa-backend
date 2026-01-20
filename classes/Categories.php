@@ -2,44 +2,108 @@
 
 class Category {
 
-	private $model = "categories";
+	private $model = "categorias";
 
-	// GET ALL USERES
-	public function getAllCategories($conn){
-		//ENVIO COUNT TOTAL
-		// $sql1 	= "SELECT COUNT(*) FROM ".$this->model." WHERE deleted = 0";
-		// $datos1 	= $conn->query($sql1);
-		// if($datos1 == ""){
-		// 	$countItems = 0;
-		// } else {
-		// 	$countItems = $datos1[0]["COUNT(*)"];
-		// };
+	// Get All Categories
+	public function getAll($conn, $params = []) {
+		$limit 	= (isset($params["limit"])) ? $params["limit"] : 100;
+		$offset = (isset($params["offset"])) ? $params["offset"] : 0;
+		$whereBase = "WHERE 1=1";
 
-		$sql	="SELECT * FROM categorias WHERE estado = 1 ORDER BY nombre;";
-		$d 		= $conn->query($sql);
-		// CALLBACK
-		if(!empty($d)){
-			$d = array("data" => $d);
-			return $d;
-		} else {
-			return array("error" => "Error: no existen users.");
+		if(isset($params["where"]["name"]) && $params["where"]["name"] != ""){
+			$whereBase .= " AND nombre LIKE '%".$params["where"]["name"]."%'";
 		}
-	}
 
-	public function getCategoryById($conn, $id){
+		if(isset($params["where"]["status"]) && $params["where"]["status"] != ""){
+			$whereBase .= " AND estado = '".$params["where"]["status"]."'";
+		}
+
+		// Count Items
+		$sqlCount = "SELECT COUNT(*) as total FROM ".$this->model." ".$whereBase;
+		$countData = $conn->query($sqlCount);
+		$total = (isset($countData[0]["total"])) ? $countData[0]["total"] : 0;
+
+		// Get Items
+		$sql = "SELECT idCategoria as id, nombre as name, descripcion as description, estado as status FROM ".$this->model." ".$whereBase." ORDER BY nombre LIMIT $offset, $limit";
+		$d 	 = $conn->query($sql);
+		if ($d == "") {
+			$d = array();
+		}
 		
-		$sql	="SELECT * FROM categorias WHERE idCategoria = ".${id}.";";
+		return array("data" => $d, "count" => (int)$total);
+	}
+
+	// Get Category by ID
+	public function getById($conn, $id){
+		$sql	= "SELECT idCategoria as id, nombre as name, descripcion as description, estado as status FROM ".$this->model." WHERE idCategoria='$id'";
 		$d 		= $conn->query($sql);
+
 		// CALLBACK
 		if(!empty($d)){
-			$d = array("data" => $d);
-			return $d;
+			return $d[0];
 		} else {
-			return array("error" => "Error: no existe la categoria.");
+			return array("error" => "Error: no se encuentra la categoria.");
 		}
 	}
 
-	
-}
+	// Create Category
+	public function create($conn, $data){
+		// Check required fields
+		if (empty($data['name'])) {
+			return array("error" => "Faltan datos obligatorios (name)", "code" => "MISSING_DATA");
+		}
 
+		$name = $data['name'];
+		$description = isset($data['description']) ? $data['description'] : '';
+		$status = isset($data['status']) ? $data['status'] : 1;
+
+		$sql 	= "INSERT INTO ".$this->model." 
+					(nombre, descripcion, estado)
+					VALUES 
+					('$name', '$description', '$status')";
+		
+		$d 	= $conn->query($sql);
+		if($d == ""){
+			return array("response" => "OK", "success" => true);
+		} else {
+			return array("error" => "Error al crear la categoria", "sql" => $sql);
+		}
+	}
+
+	// Update Category
+	public function update($conn, $id, $data){
+		$updates = [];
+
+		if(isset($data['name'])) $updates[] = "nombre = '".$data['name']."'";
+		if(isset($data['description'])) $updates[] = "descripcion = '".$data['description']."'";
+		if(isset($data['status'])) $updates[] = "estado = '".$data['status']."'";
+
+		if (empty($updates)) {
+			return array("response" => "OK", "message" => "No fields to update", "success" => true);
+		}
+
+		$sql = "UPDATE ".$this->model." SET " . implode(', ', $updates) . " WHERE idCategoria = '$id'";
+		
+		$d = $conn->query($sql);
+		
+		if(empty($d)){
+			return array("response" => "OK", "success" => true);
+		} else {
+			return array("error" => "Error al actualizar la categoria.", "sql" => $sql);
+		}
+	}
+
+	// Delete Category (Soft Delete)
+	public function delete($conn, $id){
+		$sql = "UPDATE ".$this->model." SET estado = 0 WHERE idCategoria='$id'";
+		$d 	= $conn->query($sql);
+		
+		// CALLBACK
+		if(empty($d)){
+			return array("response" => 'OK', "success" => true);
+		} else {
+			return array("error" => "Error: al eliminar la categoria.", "sql" => $sql);
+		}
+	}
+}
 ?>

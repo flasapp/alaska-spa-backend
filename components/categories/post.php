@@ -1,12 +1,12 @@
 <?php
 	// INCLUDE CLASS
-	require("classes/Neighborhood.php");
+	require("classes/Categories.php");
 
 	$conn 		= new Connection();
-	$objNeighborhood = new Neighborhood();
+	$objCategory = new Category();
 
 	$body 	= json_decode(file_get_contents('php://input'), true);
 	
-    $response = $objNeighborhood->create($conn, $body);
+    $response = $objCategory->create($conn, $body);
     echo json_encode($response);
 ?>

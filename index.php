@@ -80,6 +80,24 @@
 		$router->map('PUT', '/tasks/[i:id]', 'components/tasks/put.php', 'task-update');
 		$router->map('DELETE', '/tasks/[i:id]', 'components/tasks/delete.php', 'task-delete');
 		
+		// Categories CRUD (Admin)
+		$router->map('POST', '/categories', 'components/categories/post.php', 'category-create');
+		$router->map('PUT', '/categories/[i:id]', 'components/categories/put.php', 'category-update');
+		$router->map('DELETE', '/categories/[i:id]', 'components/categories/delete.php', 'category-delete');
+
+		// Neighborhoods CRUD (Admin)
+		$router->map('POST', '/neighborhoods', 'components/neighborhoods/post.php', 'neighborhood-create');
+		$router->map('PUT', '/neighborhoods/[i:id]', 'components/neighborhoods/put.php', 'neighborhood-update');
+		$router->map('DELETE', '/neighborhoods/[i:id]', 'components/neighborhoods/delete.php', 'neighborhood-delete');
+
+		// Products CRUD (Admin)
+		$router->map('POST', '/products', 'components/products/post.php', 'product-create');
+		$router->map('PUT', '/products/[i:id]', 'components/products/put.php', 'product-update');
+		$router->map('DELETE', '/products/[i:id]', 'components/products/delete.php', 'product-delete');
+
+		// IMAGE UPLOAD API (Admin)
+		$router->map('POST', '/upload-image', 'components/media/upload.php', 'upload-image');
+		
 		//Orders by user
 		$router->map('GET','/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user');
 		// match current request
@@ -101,6 +119,10 @@
 	$router->map('GET','/products-featured', 'components/products/get.php', 'featured');
 	//GET PRODUCT BY ID
 	$router->map('GET','/product/[i:id]', 'components/products/get.php', 'get-product');
+	//PRODUCTS ALL
+	$router->map('GET','/products', 'components/products/get.php', 'products-all');
+	//PRODUCT BY ID
+	$router->map('GET','/products/[i:id]', 'components/products/get.php', 'product-by-id-new');
 	//GET PRODUCTS BY CATEGORY
 	$router->map('GET','/products-category/[i:id]', 'components/products/get.php', 'get-by-category');
 	//GET PRODUCTS BY NAME
@@ -109,6 +131,10 @@
 	$router->map('GET','/settings/neighbourhoods', 'components/settings/get.php', 'neighbourhoods');
 	//SETTINGS CONFIGS
 	$router->map('GET','/settings/configs', 'components/settings/get.php', 'configs');
+	//ALL NEIGHBORHOODS
+	$router->map('GET','/neighborhoods', 'components/neighborhoods/get.php', 'neighborhoods-all');
+	//GET NEIGHBORHOOD BY ID
+	$router->map('GET','/neighborhoods/[i:id]', 'components/neighborhoods/get.php', 'neighborhood-by-id');
 	//ORDERS BY USER
 	$router->map('GET','/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user-public');
 	//ORDERS BY ID

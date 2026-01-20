@@ -1,13 +1,13 @@
 <?php
 	// INCLUDE CLASS
-	require("classes/Neighborhood.php");
+	require("classes/Categories.php");
 
 	$conn 		= new Connection();
-	$objNeighborhood = new Neighborhood();
+	$objCategory = new Category();
 
 	$id = $match['params']['id'];
 	$body = json_decode(file_get_contents('php://input'), true);
 	
-    $response = $objNeighborhood->update($conn, $id, $body);
+    $response = $objCategory->update($conn, $id, $body);
     echo json_encode($response);
 ?>
