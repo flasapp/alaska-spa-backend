@@ -64,6 +64,7 @@
 		}
 	}
 
+	// --- PROTECTED ROUTES (Admin / CRUD) ---
 	if($validToken){
 		// CRYPTO ALGORITHM
 		$router->map('GET','/crypto/[a:psw]', 'components/crypto/index.php', 'crypto');
@@ -84,96 +85,69 @@
 		$router->map('POST', '/categories', 'components/categories/post.php', 'category-create');
 		$router->map('PUT', '/categories/[i:id]', 'components/categories/put.php', 'category-update');
 		$router->map('DELETE', '/categories/[i:id]', 'components/categories/delete.php', 'category-delete');
-		//ALL CATEGORIES
-		$router->map('GET','/categories', 'components/categories/get.php', 'categories-all');
 
 		// Neighborhoods CRUD (Admin)
 		$router->map('POST', '/neighborhoods', 'components/neighborhoods/post.php', 'neighborhood-create');
 		$router->map('PUT', '/neighborhoods/[i:id]', 'components/neighborhoods/put.php', 'neighborhood-update');
 		$router->map('DELETE', '/neighborhoods/[i:id]', 'components/neighborhoods/delete.php', 'neighborhood-delete');
-		//ALL NEIGHBORHOODS
-		$router->map('GET','/neighborhoods', 'components/neighborhoods/get.php', 'neighborhoods-all');
 
 		// Products CRUD (Admin)
 		$router->map('POST', '/products', 'components/products/post.php', 'product-create');
 		$router->map('PUT', '/products/[i:id]', 'components/products/put.php', 'product-update');
 		$router->map('DELETE', '/products/[i:id]', 'components/products/delete.php', 'product-delete');
-		//PRODUCTS ALL
-		$router->map('GET','/products', 'components/products/get.php', 'products-all');
 
 		// IMAGE UPLOAD API (Admin)
 		$router->map('POST', '/upload-image', 'components/media/upload.php', 'upload-image');
 		
-		//Orders by user
-		$router->map('GET','/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user');
-		// match current request
-		$match = $router->match();
-
-		if($match) {
-			require $match['target'];
-			exit();
-		}
+		// Orders Admin
+		$router->map('GET','/orders', 'components/orders/get_admin.php', 'orders-all-admin');
+		$router->map('GET','/order-detail/[i:id]', 'components/orders/get_admin.php', 'order-detail-admin');
+		$router->map('PUT','/orders/[i:id]', 'components/orders/put_admin.php', 'order-update-admin');
 	}
 
-	// MATCH ROUTING - DEFAULT (Public Routes)
+	// --- PUBLIC ROUTES (Accessible to everyone) ---
 	$router->map('GET','/', 'components/home/index.php', 'home');
-	//ALL CATEGORIES
-	$router->map('GET','/categories', 'components/categories/get.php', 'categories-all');
-	//GET CATEGORY BY ID
-	$router->map('GET','/categories/[i:id]', 'components/categories/get.php', 'get-cat');
-	//FEATURED PRODUCTS
-	$router->map('GET','/products-featured', 'components/products/get.php', 'featured');
-	//GET PRODUCT BY ID
-	$router->map('GET','/product/[i:id]', 'components/products/get.php', 'get-product');
-	//PRODUCTS ALL
-	$router->map('GET','/products', 'components/products/get.php', 'products-all');
-	//PRODUCT BY ID
-	$router->map('GET','/products/[i:id]', 'components/products/get.php', 'product-by-id-new');
-	//GET PRODUCTS BY CATEGORY
-	$router->map('GET','/products-category/[i:id]', 'components/products/get.php', 'get-by-category');
-	//GET PRODUCTS BY NAME
-	$router->map('GET','/products-by-name/[a:name]', 'components/products/get.php', 'get-by-name');
-	//SETTINGS NEIGHBOURHOODS
-	$router->map('GET','/settings/neighbourhoods', 'components/settings/get.php', 'neighbourhoods');
-	//SETTINGS CONFIGS
-	$router->map('GET','/settings/configs', 'components/settings/get.php', 'configs');
-	//ALL NEIGHBORHOODS
-	$router->map('GET','/neighborhoods', 'components/neighborhoods/get.php', 'neighborhoods-all');
-	//GET NEIGHBORHOOD BY ID
-	$router->map('GET','/neighborhoods/[i:id]', 'components/neighborhoods/get.php', 'neighborhood-by-id');
-	//ORDERS BY USER
-	$router->map('GET','/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user');
-	//ORDERS BY ID
-	$router->map('GET','/order-user/[i:id]/[a:user]', 'components/orders/get.php', 'order-by-user');
-	//UPDATE PROFILE
-	$router->map('POST','/update-profile', 'components/users/put.php', 'update-profile');
-
 	
-	//NEW ORDER
+	// CATEGORIES (Public)
+	$router->map('GET','/categories', 'components/categories/get.php', 'categories-all');
+	$router->map('GET','/categories/[i:id]', 'components/categories/get.php', 'get-cat');
+	
+	// PRODUCTS (Public)
+	$router->map('GET','/products', 'components/products/get.php', 'products-all');
+	$router->map('GET','/products/[i:id]', 'components/products/get.php', 'product-by-id-new');
+	$router->map('GET','/products-featured', 'components/products/get.php', 'featured');
+	$router->map('GET','/product/[i:id]', 'components/products/get.php', 'get-product');
+	$router->map('GET','/products-category/[i:id]', 'components/products/get.php', 'get-by-category');
+	$router->map('GET','/products-by-name/[a:name]', 'components/products/get.php', 'get-by-name');
+	
+	// SETTINGS & NEIGHBORHOODS (Public)
+	$router->map('GET','/settings/neighbourhoods', 'components/settings/get.php', 'neighbourhoods');
+	$router->map('GET','/settings/configs', 'components/settings/get.php', 'configs');
+	$router->map('GET','/neighborhoods', 'components/neighborhoods/get.php', 'neighborhoods-all');
+	$router->map('GET','/neighborhoods/[i:id]', 'components/neighborhoods/get.php', 'neighborhood-by-id');
+	
+	// ORDERS (User related / Publicly accessible with or without token as per request)
+	$router->map('GET','/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user');
+	$router->map('GET','/order-user/[i:id]/[a:user]', 'components/orders/get.php', 'order-by-user');
 	$router->map('POST','/order-new', 'components/orders/post.php', 'order-new');
-	// LOGIN
+	
+	// AUTHENTICATION & PROFILE
 	$router->map('POST','/admin-login', 'components/users/post.php', 'admin-login');
-	// LOGIN
 	$router->map('POST','/login', 'components/users/post.php', 'user-login');
-	// LOGIN
 	$router->map('POST','/signup', 'components/users/post.php', 'user-signup');
-	// NEW CLIENT
 	$router->map('POST','/user-new', 'components/users/post.php', 'client-new');
-	// REQUEST NEW PASSWORD
+	$router->map('POST','/update-profile', 'components/users/put.php', 'update-profile');
 	$router->map('POST','/request-code-password', 'components/users/post.php', 'request-code-password');
-
-	// REQUEST NEW PASSWORD
 	$router->map('POST','/change-password', 'components/users/post.php', 'change-password');
 
-	// match current request
+	// --- EXECUTION ---
 	$match = $router->match();
 
 	if($match) {
 		require $match['target'];
 	} else {
-		// If custom handling for invalid token on protected route is needed, logic could go here.
-		// Currently returning generic error.
-		echo json_encode( array("error" => "Error: no existe la API.") );
+		header("HTTP/1.0 404 Not Found");
+		echo json_encode( array("error" => "Error: la ruta solicitada no existe o requiere autenticación.") );
 	}
 
 
