@@ -5,9 +5,9 @@ class Category {
 	private $model = "categorias";
 
 	// Get All Categories
-	public function getAll($conn, $params = []) {
-		$limit 	= (isset($params["limit"])) ? $params["limit"] : 100;
-		$offset = (isset($params["offset"])) ? $params["offset"] : 0;
+	public function getAll($conn, $params = array()) {
+		$limit 	= (isset($params["limit"])) ? (int)$params["limit"] : 100;
+		$offset = (isset($params["offset"])) ? (int)$params["offset"] : 0;
 		$whereBase = "WHERE 1=1";
 
 		if(isset($params["where"]["name"]) && $params["where"]["name"] != ""){
@@ -72,7 +72,7 @@ class Category {
 
 	// Update Category
 	public function update($conn, $id, $data){
-		$updates = [];
+		$updates = array();
 
 		if(isset($data['name'])) $updates[] = "nombre = '".$data['name']."'";
 		if(isset($data['description'])) $updates[] = "descripcion = '".$data['description']."'";

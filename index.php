@@ -84,16 +84,22 @@
 		$router->map('POST', '/categories', 'components/categories/post.php', 'category-create');
 		$router->map('PUT', '/categories/[i:id]', 'components/categories/put.php', 'category-update');
 		$router->map('DELETE', '/categories/[i:id]', 'components/categories/delete.php', 'category-delete');
+		//ALL CATEGORIES
+		$router->map('GET','/categories', 'components/categories/get.php', 'categories-all');
 
 		// Neighborhoods CRUD (Admin)
 		$router->map('POST', '/neighborhoods', 'components/neighborhoods/post.php', 'neighborhood-create');
 		$router->map('PUT', '/neighborhoods/[i:id]', 'components/neighborhoods/put.php', 'neighborhood-update');
 		$router->map('DELETE', '/neighborhoods/[i:id]', 'components/neighborhoods/delete.php', 'neighborhood-delete');
+		//ALL NEIGHBORHOODS
+		$router->map('GET','/neighborhoods', 'components/neighborhoods/get.php', 'neighborhoods-all');
 
 		// Products CRUD (Admin)
 		$router->map('POST', '/products', 'components/products/post.php', 'product-create');
 		$router->map('PUT', '/products/[i:id]', 'components/products/put.php', 'product-update');
 		$router->map('DELETE', '/products/[i:id]', 'components/products/delete.php', 'product-delete');
+		//PRODUCTS ALL
+		$router->map('GET','/products', 'components/products/get.php', 'products-all');
 
 		// IMAGE UPLOAD API (Admin)
 		$router->map('POST', '/upload-image', 'components/media/upload.php', 'upload-image');
@@ -136,7 +142,7 @@
 	//GET NEIGHBORHOOD BY ID
 	$router->map('GET','/neighborhoods/[i:id]', 'components/neighborhoods/get.php', 'neighborhood-by-id');
 	//ORDERS BY USER
-	$router->map('GET','/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user-public');
+	$router->map('GET','/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user');
 	//ORDERS BY ID
 	$router->map('GET','/order-user/[i:id]/[a:user]', 'components/orders/get.php', 'order-by-user');
 	//UPDATE PROFILE

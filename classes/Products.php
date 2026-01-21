@@ -5,10 +5,10 @@ class Product {
 	private $model = "productos";
 
 	// Get All Products
-	public function getAll($conn, $params = []) {
-		$limit 	= (isset($params["limit"])) ? $params["limit"] : 100;
-		$offset = (isset($params["offset"])) ? $params["offset"] : 0;
-		$whereBase = "WHERE 1=1";
+	public function getAll($conn, $params = array()) {
+		$limit 	= (isset($params["limit"])) ? (int)$params["limit"] : 100;
+		$offset = (isset($params["offset"])) ? (int)$params["offset"] : 0;
+		$whereBase = "WHERE (nombre != '' AND nombre IS NOT NULL) AND (descripcion != '' AND descripcion IS NOT NULL) AND precio > 0";
 
 		if(isset($params["where"]["name"]) && $params["where"]["name"] != ""){
 			$search = $params["where"]["name"];
@@ -21,6 +21,14 @@ class Product {
 
 		if(isset($params["where"]["status"]) && $params["where"]["status"] != ""){
 			$whereBase .= " AND estado = '".$params["where"]["status"]."'";
+		}
+
+		if(isset($params["where"]["offer"]) && $params["where"]["offer"] !== ""){
+			$whereBase .= " AND oferta = '".$params["where"]["offer"]."'";
+		}
+
+		if(isset($params["where"]["stock"]) && $params["where"]["stock"] !== ""){
+			$whereBase .= " AND stock = '".$params["where"]["stock"]."'";
 		}
 
 		// Count Items
@@ -108,7 +116,7 @@ class Product {
 
 	// Update Product
 	public function update($conn, $id, $data){
-		$updates = [];
+		$updates = array();
 
 		if(isset($data['name'])) $updates[] = "nombre = '".$data['name']."'";
 		if(isset($data['description'])) $updates[] = "descripcion = '".$data['description']."'";
@@ -152,12 +160,12 @@ class Product {
 	}
 
 	// Get Products by Category for Frontend (Active only)
-	public function getByCategory($conn, $categoryId, $params = []) {
-		$limit 	= (isset($params["limit"])) ? $params["limit"] : 100;
-		$offset = (isset($params["offset"])) ? $params["offset"] : 0;
+	public function getByCategory($conn, $categoryId, $params = array()) {
+		$limit 	= (isset($params["limit"])) ? (int)$params["limit"] : 100;
+		$offset = (isset($params["offset"])) ? (int)$params["offset"] : 0;
 		
-		// Forced filters: category and active status
-		$whereBase = "WHERE idCategoria = '$categoryId' AND estado = 1";
+		// Forced filters: category, active status and integrity
+		$whereBase = "WHERE idCategoria = '$categoryId' AND estado = 1 AND (nombre != '' AND nombre IS NOT NULL) AND (descripcion != '' AND descripcion IS NOT NULL) AND precio > 0";
 
 		if(isset($params["where"]["name"]) && $params["where"]["name"] != ""){
 			$search = $params["where"]["name"];
@@ -192,12 +200,12 @@ class Product {
 	}
 
 	// Get Featured Products for Frontend (Active & Offer only)
-	public function getFeatured($conn, $params = []) {
-		$limit 	= (isset($params["limit"])) ? $params["limit"] : 100;
-		$offset = (isset($params["offset"])) ? $params["offset"] : 0;
+	public function getFeatured($conn, $params = array()) {
+		$limit 	= (isset($params["limit"])) ? (int)$params["limit"] : 100;
+		$offset = (isset($params["offset"])) ? (int)$params["offset"] : 0;
 		
-		// Forced filters: featured and active status
-		$whereBase = "WHERE oferta = 1 AND estado = 1";
+		// Forced filters: featured, active status and integrity
+		$whereBase = "WHERE oferta = 1 AND estado = 1 AND (nombre != '' AND nombre IS NOT NULL) AND (descripcion != '' AND descripcion IS NOT NULL) AND precio > 0";
 
 		if(isset($params["where"]["name"]) && $params["where"]["name"] != ""){
 			$search = $params["where"]["name"];

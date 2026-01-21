@@ -15,14 +15,14 @@ class Setting {
 		// 	$countItems = $datos1[0]["COUNT(*)"];
 		// };
 
-		$sql	="SELECT * FROM barrios WHERE estado = 1 ORDER BY title;";
+		$sql	="SELECT idBarrio as id, title, monto as amount, estado as status, modifyAt as updatedAt, modifyBy as updatedBy FROM barrios WHERE estado = 1 ORDER BY title;";
 		$d 		= $conn->query($sql);
 		// CALLBACK
 		if(!empty($d)){
 			$d = array("data" => $d);
 			return $d;
 		} else {
-			return array("error" => "Error: no existen Settingos en oferta.");
+			return array("error" => "Error: no existen Barrios.");
 		}
 	}
 	public function getSettings($conn){

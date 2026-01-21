@@ -37,16 +37,35 @@ class User {
 	//Login for e-commerce
 	public function loginFrontend($conn, $user){
 		// CLEAR FIELDS
-		$pass = md5($user[pass]);
-		//$ci = $user[ci];
+		$pass = md5($user['pass']);
 		
-		$sql 	= "SELECT * FROM usuarios WHERE mail = '$user[mail]' AND pass = '$pass'";
+		$sql 	= "SELECT 
+					idUsuario as id, 
+					nomUsuario as name, 
+					apellido as lastName, 
+					mail as email, 
+					tel as phone, 
+					calle as street, 
+					numero as number, 
+					apto as apartment, 
+					esquina as corner, 
+					idBarrio as neighborhoodId, 
+					img as image, 
+					lat as latitude, 
+					lng as longitude, 
+					rol as role, 
+					estado as status, 
+					fechaAlta as createdAt, 
+					modifyAt as updatedAt, 
+					modifyBy as updatedBy,
+					pass 
+				FROM usuarios WHERE mail = '$user[mail]' AND pass = '$pass'";
 		$datos 	= $conn->query($sql);
-		if($datos == ""){
-			$d = array("response" => "err: to get user by ID:");	
+		if($datos == "" || empty($datos)){
+			$d = array("response" => "err: invalid credentials", "error" => true);	
 			return $d;
 		} else {
-			$datos[0]["token"] =  $this->cryptoPsw($d[0]["pass"].$d[0]["mail"]);
+			$datos[0]["token"] =  $this->cryptoPsw($datos[0]["pass"].$datos[0]["email"]);
 			unset($datos[0]["pass"]);
 			return $datos[0];	
 		}

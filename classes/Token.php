@@ -12,10 +12,11 @@ class Token {
 	}
 
 	public function checkToken($conn, $token){
-		$sql = "SELECT pass, mail FROM usuarios";
+		$sql = "SELECT idUsuario, pass, mail FROM usuarios";
 		$d 	 = $conn->query($sql);
 		$cnt = count($d);
-		$find= false;
+		$find = false;
+		$userId = null;
 
 		for ($i=0; $i < $cnt; $i++) {
 			if($token == $this->cryptoPsw($d[$i]["pass"].$d[$i]["mail"])){
