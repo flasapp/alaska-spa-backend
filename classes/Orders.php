@@ -2,17 +2,40 @@
 require("config/env.php");
 
 class Order {
-	private $model = "users";
+	private string $model = "users";
 
-	//GET orders by user
-	public function getOrdersByUser($conn, $userId){
-		$sql	= "SELECT estado AS status, fechaEntrega AS deliveryDate, fechaPedido AS orderDate, horaPedido AS orderHour, horarioEntrega AS deliverySchedule, idBarrio AS neighbourhoodId, idPedido AS orderId, idUsuario AS userId, modoPago AS paymentMethod, observaciones AS observations, ordenCompra AS purchaseOrder, telContacto AS contactPhone, total AS total, visto AS seen FROM pedidos WHERE idUsuario = '$userId' ORDER BY idPedido DESC;";
-		$d 		= $conn->query($sql);
-		// CALLBACK
-		if(!empty($d)){
-			return array("response" => 'OK', "data" => $d);
-		} else {
-			return array("error" => "Error: al obtener los pedidos.", "sql" => $sql);
+	/**
+	 * Get orders by user ID
+	 * 
+	 * @param Connection $conn Database connection
+	 * @param int $userId User ID
+	 * @return array Response with orders data or error
+	 */
+	public function getOrdersByUser(Connection $conn, int $userId): array {
+		try {
+			$sql = "SELECT estado AS status, fechaEntrega AS deliveryDate, fechaPedido AS orderDate, 
+								horaPedido AS orderHour, horarioEntrega AS deliverySchedule, idBarrio AS neighbourhoodId, 
+								idPedido AS orderId, idUsuario AS userId, modoPago AS paymentMethod, 
+								observaciones AS observations, ordenCompra AS purchaseOrder, 
+								telContacto AS contactPhone, total AS total, visto AS seen 
+						FROM pedidos 
+						WHERE idUsuario = ? 
+						ORDER BY idPedido DESC";
+			
+			$stmt = $conn->prepare($sql);
+			$stmt->execute([$userId]);
+			$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			
+			return [
+				"response" => 'OK',
+				"data" => $data
+			];
+		} catch (PDOException $e) {
+			return [
+				"error" => "Error: al obtener los pedidos.",
+				"sql" => $sql,
+				"exception" => $e->getMessage()
+			];
 		}
 	}
 
@@ -99,7 +122,7 @@ class Order {
 			$datos 	= $conn->query($sql_pedido);
 			if($datos == ""){
 				// OBTENGO LA ID DEL PEDIDO
-				$idPedido = mysql_insert_id();
+				$idPedido = mysqli_insert_id($conn);
 				/* CREO EL DETALLE DEL PEDIDO A INSERTAR */
 				$sql_detallesPedido = "INSERT INTO detallesPedido (idPedido,idProducto,cantidad,subtotal) VALUES ";
 
@@ -155,7 +178,9 @@ class Order {
 				$headers .= 'From: Alaska Congelados<alaskacongelados@gmail.com>' . "\r\n";
 				// $headers .= 'Cco: pedidosalaskacongelados@gmail.com' . "\r\n";
 
-				@mail($email_to, $email_subject, $email_message, $headers);
+				error_reporting(0);
+			mail($email_to, $email_subject, $email_message, $headers);
+			error_reporting(E_ALL);
 
 				//ENVIAR MAIL A LA EMPRESA
 				$email_to = 'pedidosalaskacongelados@gmail.com';
@@ -176,7 +201,9 @@ class Order {
 				$headers .= 'From: Alaska Congelados<alaskacongelados@gmail.com>' . "\r\n";
 				// $headers .= 'Cco: pedidosalaskacongelados@gmail.com' . "\r\n";
 
-				@mail($email_to, $email_subject, $email_message, $headers);
+				error_reporting(0);
+			mail($email_to, $email_subject, $email_message, $headers);
+			error_reporting(E_ALL);
 
 
 				$d = array("response" => "Ok");

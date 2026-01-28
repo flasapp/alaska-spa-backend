@@ -2,44 +2,54 @@
 
 class Category {
 
-	private $model = "categories";
+	private $model = "categorias";
 
-	// GET ALL USERES
-	public function getAllCategories($conn){
-		//ENVIO COUNT TOTAL
-		// $sql1 	= "SELECT COUNT(*) FROM ".$this->model." WHERE deleted = 0";
-		// $datos1 	= $conn->query($sql1);
-		// if($datos1 == ""){
-		// 	$countItems = 0;
-		// } else {
-		// 	$countItems = $datos1[0]["COUNT(*)"];
-		// };
-
-		$sql	="SELECT * FROM categorias WHERE estado = 1 ORDER BY nombre;";
-		$d 		= $conn->query($sql);
-		// CALLBACK
-		if(!empty($d)){
-			$d = array("data" => $d);
-			return $d;
-		} else {
-			return array("error" => "Error: no existen users.");
+	/**
+	 * Get all active categories
+	 * 
+	 * @param PDO $conn Database connection
+	 * @return array Categories data or error
+	 */
+	public function getAllCategories(PDO $conn): array {
+		try {
+			$sql = "SELECT * FROM categorias WHERE estado = 1 ORDER BY nombre";
+			$stmt = $conn->prepare($sql);
+			$stmt->execute();
+			$categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			
+			if (!empty($categories)) {
+				return ["data" => $categories];
+			} else {
+				return ["error" => "No categories found"];
+			}
+		} catch (PDOException $e) {
+			throw new Exception("Database error: " . $e->getMessage());
 		}
 	}
 
-	public function getCategoryById($conn, $id){
-		
-		$sql	="SELECT * FROM categorias WHERE idCategoria = ".${id}.";";
-		$d 		= $conn->query($sql);
-		// CALLBACK
-		if(!empty($d)){
-			$d = array("data" => $d);
-			return $d;
-		} else {
-			return array("error" => "Error: no existe la categoria.");
+	/**
+	 * Get category by ID
+	 * 
+	 * @param PDO $conn Database connection
+	 * @param int $id Category ID
+	 * @return array Category data or error
+	 */
+	public function getCategoryById(PDO $conn, int $id): array {
+		try {
+			$sql = "SELECT * FROM categorias WHERE idCategoria = :id";
+			$stmt = $conn->prepare($sql);
+			$stmt->execute(['id' => $id]);
+			$category = $stmt->fetch(PDO::FETCH_ASSOC);
+			
+			if ($category) {
+				return ["data" => $category];
+			} else {
+				return ["error" => "Category not found"];
+			}
+		} catch (PDOException $e) {
+			throw new Exception("Database error: " . $e->getMessage());
 		}
 	}
-
-	
 }
 
 ?>
