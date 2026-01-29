@@ -22,4 +22,3 @@ jobs:
           port: 21
           local-dir: ./  # raíz del repo
           server-dir: ${{ secrets.FTP_TARGET_DIR }}
-          git-ftp-args: --only-changed
