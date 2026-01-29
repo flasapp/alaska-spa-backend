@@ -18,13 +18,17 @@ class Category {
 			$whereBase .= " AND estado = '".$params["where"]["status"]."'";
 		}
 
+		if(isset($params["where"]["favorite"]) && $params["where"]["favorite"] != ""){
+			$whereBase .= " AND fav = '".$params["where"]["favorite"]."'";
+		}
+
 		// Count Items
 		$sqlCount = "SELECT COUNT(*) as total FROM ".$this->model." ".$whereBase;
 		$countData = $conn->query($sqlCount);
 		$total = (isset($countData[0]["total"])) ? $countData[0]["total"] : 0;
 
 		// Get Items
-		$sql = "SELECT idCategoria as id, nombre as name, descripcion as description, estado as status FROM ".$this->model." ".$whereBase." ORDER BY nombre LIMIT $offset, $limit";
+		$sql = "SELECT idCategoria as id, nombre as name, descripcion as description, imagen as image, fav as favorite, estado as status FROM ".$this->model." ".$whereBase." ORDER BY nombre LIMIT $offset, $limit";
 		$d 	 = $conn->query($sql);
 		if ($d == "") {
 			$d = array();
@@ -35,7 +39,7 @@ class Category {
 
 	// Get Category by ID
 	public function getById($conn, $id){
-		$sql	= "SELECT idCategoria as id, nombre as name, descripcion as description, estado as status FROM ".$this->model." WHERE idCategoria='$id'";
+		$sql	= "SELECT idCategoria as id, nombre as name, descripcion as description, imagen as image, fav as favorite, estado as status FROM ".$this->model." WHERE idCategoria='$id'";
 		$d 		= $conn->query($sql);
 
 		// CALLBACK
@@ -55,12 +59,14 @@ class Category {
 
 		$name = $data['name'];
 		$description = isset($data['description']) ? $data['description'] : '';
+		$image = isset($data['image']) ? $data['image'] : '';
+		$favorite = isset($data['favorite']) ? (int)$data['favorite'] : 0;
 		$status = isset($data['status']) ? $data['status'] : 1;
 
 		$sql 	= "INSERT INTO ".$this->model." 
-					(nombre, descripcion, estado)
+					(nombre, descripcion, imagen, fav, estado)
 					VALUES 
-					('$name', '$description', '$status')";
+					('$name', '$description', '$image', '$favorite', '$status')";
 		
 		$d 	= $conn->query($sql);
 		if($d == ""){
@@ -76,6 +82,8 @@ class Category {
 
 		if(isset($data['name'])) $updates[] = "nombre = '".$data['name']."'";
 		if(isset($data['description'])) $updates[] = "descripcion = '".$data['description']."'";
+		if(isset($data['image'])) $updates[] = "imagen = '".$data['image']."'";
+		if(isset($data['favorite'])) $updates[] = "fav = '".(int)$data['favorite']."'";
 		if(isset($data['status'])) $updates[] = "estado = '".$data['status']."'";
 
 		if (empty($updates)) {

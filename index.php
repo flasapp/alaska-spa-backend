@@ -103,6 +103,13 @@
 		$router->map('GET','/orders', 'components/orders/get_admin.php', 'orders-all-admin');
 		$router->map('GET','/order-detail/[i:id]', 'components/orders/get_admin.php', 'order-detail-admin');
 		$router->map('PUT','/orders/[i:id]', 'components/orders/put_admin.php', 'order-update-admin');
+
+		// Representatives CRUD (Admin)
+		$router->map('GET', '/representants', 'components/representants/get.php', 'representants-all');
+		$router->map('GET', '/representants/[i:id]', 'components/representants/get.php', 'representant-detail');
+		$router->map('POST', '/representants', 'components/representants/post.php', 'representant-create');
+		$router->map('PUT', '/representants/[i:id]', 'components/representants/put.php', 'representant-update');
+		$router->map('DELETE', '/representants/[i:id]', 'components/representants/delete.php', 'representant-delete');
 	}
 
 	// --- PUBLIC ROUTES (Accessible to everyone) ---

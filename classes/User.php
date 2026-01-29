@@ -89,12 +89,12 @@ class User {
 	//Signup for e-commerce
 	public function signupFrontend($conn, $user){
 		//Check every field is on user
-		if (empty($user['nomUsuario']) || empty($user['apellido']) || empty($user['tel']) || empty($user['mail']) || empty($user['pass']) || empty($user['fechaAlta'])) {
+		if (empty($user['name']) || empty($user['lastName']) || empty($user['phone']) || empty($user['email']) || empty($user['password']) || empty($user['createdAt'])) {
 			return array("error" => "Faltan datos", "code" => "MISSING_DATA");
 		}
 
 		//First of all check if the email already exist
-		$sqlExist =  "SELECT * FROM usuarios WHERE mail = '$user[mail]'";
+		$sqlExist =  "SELECT * FROM usuarios WHERE mail = '$user[email]'";
     	$dataExist = $conn->query($sqlExist);
 
     	if (!empty($dataExist)) {
@@ -102,14 +102,14 @@ class User {
     	}
 
 		//If doeasnt exist insert into tbale
-		$user['pass'] = md5($user['pass']);
+		$user['password'] = md5($user['password']);
 		$sql 	= "INSERT INTO usuarios 
 					(nomUsuario, apellido, tel, mail, pass, fechaAlta, rol, estado)
 					VALUES 
-					('$user[nomUsuario]', '$user[apellido]', '$user[tel]', '$user[mail]', '$user[pass]', '$user[fechaAlta]', 0, 1)";
+					('$user[name]', '$user[lastName]', '$user[phone]', '$user[email]', '$user[password]', '$user[createdAt]', 0, 1)";
 		
 		$datos 	= $conn->query($sql);
-		if($datos == ""){
+		if(empty($datos)){
 			$d = array("response" => "Ok", success => true);
 			return $d;
 		} else {
