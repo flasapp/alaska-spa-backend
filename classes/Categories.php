@@ -39,6 +39,16 @@ class Category
 		return array("data" => $d, "count" => (int) $total);
 	}
 
+	public function getFavorites($conn)
+	{
+		$sql = "SELECT idCategoria as id, nombre as name, descripcion as description, imagen as image, fav as favorite, estado as status, orden as `order` FROM " . $this->model . " WHERE fav = 1 AND estado = 1 ORDER BY orden ASC";
+		$d = $conn->query($sql);
+		if ($d == "") {
+			$d = array();
+		}
+		return $d;
+	}
+
 	// Get Category by ID
 	public function getById($conn, $id)
 	{

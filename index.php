@@ -1,161 +1,162 @@
 <?php
-	// CORS HANDLING
-	if (isset($_SERVER['HTTP_ORIGIN'])) {
-		// Decide if the origin in $_SERVER['HTTP_ORIGIN'] is one
-		// you want to allow, and if so:
-		header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
-		header('Access-Control-Allow-Credentials: true');
-		header('Access-Control-Max-Age: 86400');    // cache for 1 day
+// CORS HANDLING
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+	// Decide if the origin in $_SERVER['HTTP_ORIGIN'] is one
+	// you want to allow, and if so:
+	header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+	header('Access-Control-Allow-Credentials: true');
+	header('Access-Control-Max-Age: 86400');    // cache for 1 day
+}
+
+// Access-Control headers are received during OPTIONS requests
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+
+	if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
+		header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+
+	if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
+		header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+
+	exit(0);
+}
+
+require('config/conn.php');
+require('classes/AltoRouter.php');
+require('classes/Token.php');
+require('config/env.php');
+
+// CALL OBJS
+$router = new AltoRouter();
+$conn = new Connection();
+$objToken = new Token();
+$router->setBasePath(CONTEXT);
+
+//Protected Routes
+// file_put_contents('debug.txt', print_r($_SERVER, true)); // Debug line commented out
+$token = null;
+$headers = null;
+if (isset($_SERVER["HTTP_AUTHORIZATION"])) {
+	$token = $_SERVER["HTTP_AUTHORIZATION"];
+} else if (isset($_SERVER["REDIRECT_HTTP_AUTHORIZATION"])) {
+	$token = $_SERVER["REDIRECT_HTTP_AUTHORIZATION"];
+} else if (isset($_SERVER["HTTP_TOKEN"])) {
+	$token = $_SERVER["HTTP_TOKEN"];
+}
+
+// Fallback for Apache
+if (!$token && function_exists('apache_request_headers')) {
+	$headers = apache_request_headers();
+	if (isset($headers['Authorization'])) {
+		$token = $headers['Authorization'];
+	}
+}
+
+$validToken = false;
+if ($token) {
+	// Cleaning token "Bearer "
+	if (preg_match('/Bearer\s(\S+)/', $token, $matches)) {
+		$token = $matches[1];
 	}
 
-	// Access-Control headers are received during OPTIONS requests
-	if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-		
-		if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
-			header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");         
-		
-		if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
-			header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
-	
-		exit(0);
+	$tokenResponse = $objToken->checkToken($conn, $token);
+	if ($tokenResponse["find_token"]) {
+		$validToken = true;
 	}
+}
 
-	require('config/conn.php');
-	require('classes/AltoRouter.php');
-	require('classes/Token.php');
-	require('config/env.php');
+// --- PROTECTED ROUTES (Admin / CRUD) ---
+if ($validToken) {
+	// CRYPTO ALGORITHM
+	$router->map('GET', '/crypto/[a:psw]', 'components/crypto/index.php', 'crypto');
+	// USERS ALL
+	$router->map('GET', '/users', 'components/users/get.php', 'users-all');
+	// UPDATE USER (Admin)
+	$router->map('PUT', '/users/[i:id]', 'components/users/put.php', 'update-user');
+	// CREATE USER (Admin)
+	$router->map('POST', '/users', 'components/users/post_admin.php', 'create-user-admin');
 
-	// CALL OBJS
-	$router 	= new AltoRouter();
-	$conn 		= new Connection();
-	$objToken	= new Token();
-	$router->setBasePath(CONTEXT);
+	// Tasks CRUD
+	$router->map('GET', '/tasks', 'components/tasks/get.php', 'tasks-all');
+	$router->map('POST', '/tasks', 'components/tasks/post.php', 'task-create');
+	$router->map('PUT', '/tasks/[i:id]', 'components/tasks/put.php', 'task-update');
+	$router->map('DELETE', '/tasks/[i:id]', 'components/tasks/delete.php', 'task-delete');
 
-	//Protected Routes
-	// file_put_contents('debug.txt', print_r($_SERVER, true)); // Debug line commented out
-	$token = null;
-	$headers = null;
-	if(isset($_SERVER["HTTP_AUTHORIZATION"])){
-		$token = $_SERVER["HTTP_AUTHORIZATION"];
-	} else if(isset($_SERVER["REDIRECT_HTTP_AUTHORIZATION"])) {
-		$token = $_SERVER["REDIRECT_HTTP_AUTHORIZATION"];
-	} else if(isset($_SERVER["HTTP_TOKEN"])){
-		$token = $_SERVER["HTTP_TOKEN"];
-	}
+	// Categories CRUD (Admin)
+	$router->map('POST', '/categories', 'components/categories/post.php', 'category-create');
+	$router->map('PUT', '/categories/[i:id]', 'components/categories/put.php', 'category-update');
+	$router->map('DELETE', '/categories/[i:id]', 'components/categories/delete.php', 'category-delete');
 
-	// Fallback for Apache
-	if(!$token && function_exists('apache_request_headers')){
-		$headers = apache_request_headers();
-		if(isset($headers['Authorization'])){
-			$token = $headers['Authorization'];
-		}
-	}
+	// Neighborhoods CRUD (Admin)
+	$router->map('POST', '/neighborhoods', 'components/neighborhoods/post.php', 'neighborhood-create');
+	$router->map('PUT', '/neighborhoods/[i:id]', 'components/neighborhoods/put.php', 'neighborhood-update');
+	$router->map('DELETE', '/neighborhoods/[i:id]', 'components/neighborhoods/delete.php', 'neighborhood-delete');
 
-	$validToken = false;
-	if($token){
-		// Cleaning token "Bearer "
-		if (preg_match('/Bearer\s(\S+)/', $token, $matches)) {
-			$token = $matches[1];
-		}
+	// Products CRUD (Admin)
+	$router->map('POST', '/products', 'components/products/post.php', 'product-create');
+	$router->map('PUT', '/products/[i:id]', 'components/products/put.php', 'product-update');
+	$router->map('DELETE', '/products/[i:id]', 'components/products/delete.php', 'product-delete');
 
-		$tokenResponse = $objToken->checkToken($conn, $token);
-		if($tokenResponse["find_token"]){
-			$validToken = true;
-		}
-	}
+	// IMAGE UPLOAD API (Admin)
+	$router->map('POST', '/upload-image', 'components/media/upload.php', 'upload-image');
 
-	// --- PROTECTED ROUTES (Admin / CRUD) ---
-	if($validToken){
-		// CRYPTO ALGORITHM
-		$router->map('GET','/crypto/[a:psw]', 'components/crypto/index.php', 'crypto');
-		// USERS ALL
-		$router->map('GET','/users', 'components/users/get.php', 'users-all');
-		// UPDATE USER (Admin)
-		$router->map('PUT', '/users/[i:id]', 'components/users/put.php', 'update-user');
-		// CREATE USER (Admin)
-		$router->map('POST', '/users', 'components/users/post_admin.php', 'create-user-admin');
+	// Orders Admin
+	$router->map('GET', '/orders', 'components/orders/get_admin.php', 'orders-all-admin');
+	$router->map('GET', '/order-detail/[i:id]', 'components/orders/get_admin.php', 'order-detail-admin');
+	$router->map('PUT', '/orders/[i:id]', 'components/orders/put_admin.php', 'order-update-admin');
 
-		// Tasks CRUD
-		$router->map('GET', '/tasks', 'components/tasks/get.php', 'tasks-all');
-		$router->map('POST', '/tasks', 'components/tasks/post.php', 'task-create');
-		$router->map('PUT', '/tasks/[i:id]', 'components/tasks/put.php', 'task-update');
-		$router->map('DELETE', '/tasks/[i:id]', 'components/tasks/delete.php', 'task-delete');
-		
-		// Categories CRUD (Admin)
-		$router->map('POST', '/categories', 'components/categories/post.php', 'category-create');
-		$router->map('PUT', '/categories/[i:id]', 'components/categories/put.php', 'category-update');
-		$router->map('DELETE', '/categories/[i:id]', 'components/categories/delete.php', 'category-delete');
+	// Representatives CRUD (Admin)
+	$router->map('GET', '/representants', 'components/representants/get.php', 'representants-all');
+	$router->map('GET', '/representants/[i:id]', 'components/representants/get.php', 'representant-detail');
+	$router->map('POST', '/representants', 'components/representants/post.php', 'representant-create');
+	$router->map('PUT', '/representants/[i:id]', 'components/representants/put.php', 'representant-update');
+	$router->map('DELETE', '/representants/[i:id]', 'components/representants/delete.php', 'representant-delete');
+}
 
-		// Neighborhoods CRUD (Admin)
-		$router->map('POST', '/neighborhoods', 'components/neighborhoods/post.php', 'neighborhood-create');
-		$router->map('PUT', '/neighborhoods/[i:id]', 'components/neighborhoods/put.php', 'neighborhood-update');
-		$router->map('DELETE', '/neighborhoods/[i:id]', 'components/neighborhoods/delete.php', 'neighborhood-delete');
+// --- PUBLIC ROUTES (Accessible to everyone) ---
+$router->map('GET', '/', 'components/home/index.php', 'home');
 
-		// Products CRUD (Admin)
-		$router->map('POST', '/products', 'components/products/post.php', 'product-create');
-		$router->map('PUT', '/products/[i:id]', 'components/products/put.php', 'product-update');
-		$router->map('DELETE', '/products/[i:id]', 'components/products/delete.php', 'product-delete');
+// CATEGORIES (Public)
+$router->map('GET', '/categories', 'components/categories/get.php', 'categories-all');
+$router->map('GET', '/categories-featured', 'components/categories/get_featured.php', 'categories-featured');
+$router->map('GET', '/categories/[i:id]', 'components/categories/get.php', 'get-cat');
 
-		// IMAGE UPLOAD API (Admin)
-		$router->map('POST', '/upload-image', 'components/media/upload.php', 'upload-image');
-		
-		// Orders Admin
-		$router->map('GET','/orders', 'components/orders/get_admin.php', 'orders-all-admin');
-		$router->map('GET','/order-detail/[i:id]', 'components/orders/get_admin.php', 'order-detail-admin');
-		$router->map('PUT','/orders/[i:id]', 'components/orders/put_admin.php', 'order-update-admin');
+// PRODUCTS (Public)
+$router->map('GET', '/products', 'components/products/get.php', 'products-all');
+$router->map('GET', '/products/[i:id]', 'components/products/get.php', 'product-by-id-new');
+$router->map('GET', '/products-featured', 'components/products/get.php', 'featured');
+$router->map('GET', '/product/[i:id]', 'components/products/get.php', 'get-product');
+$router->map('GET', '/products-category/[i:id]', 'components/products/get.php', 'get-by-category');
+$router->map('GET', '/products-by-name/[a:name]', 'components/products/get.php', 'get-by-name');
 
-		// Representatives CRUD (Admin)
-		$router->map('GET', '/representants', 'components/representants/get.php', 'representants-all');
-		$router->map('GET', '/representants/[i:id]', 'components/representants/get.php', 'representant-detail');
-		$router->map('POST', '/representants', 'components/representants/post.php', 'representant-create');
-		$router->map('PUT', '/representants/[i:id]', 'components/representants/put.php', 'representant-update');
-		$router->map('DELETE', '/representants/[i:id]', 'components/representants/delete.php', 'representant-delete');
-	}
+// SETTINGS & NEIGHBORHOODS (Public)
+$router->map('GET', '/settings/neighbourhoods', 'components/settings/get.php', 'neighbourhoods');
+$router->map('GET', '/settings/configs', 'components/settings/get.php', 'configs');
+$router->map('GET', '/neighborhoods', 'components/neighborhoods/get.php', 'neighborhoods-all');
+$router->map('GET', '/neighborhoods/[i:id]', 'components/neighborhoods/get.php', 'neighborhood-by-id');
 
-	// --- PUBLIC ROUTES (Accessible to everyone) ---
-	$router->map('GET','/', 'components/home/index.php', 'home');
-	
-	// CATEGORIES (Public)
-	$router->map('GET','/categories', 'components/categories/get.php', 'categories-all');
-	$router->map('GET','/categories/[i:id]', 'components/categories/get.php', 'get-cat');
-	
-	// PRODUCTS (Public)
-	$router->map('GET','/products', 'components/products/get.php', 'products-all');
-	$router->map('GET','/products/[i:id]', 'components/products/get.php', 'product-by-id-new');
-	$router->map('GET','/products-featured', 'components/products/get.php', 'featured');
-	$router->map('GET','/product/[i:id]', 'components/products/get.php', 'get-product');
-	$router->map('GET','/products-category/[i:id]', 'components/products/get.php', 'get-by-category');
-	$router->map('GET','/products-by-name/[a:name]', 'components/products/get.php', 'get-by-name');
-	
-	// SETTINGS & NEIGHBORHOODS (Public)
-	$router->map('GET','/settings/neighbourhoods', 'components/settings/get.php', 'neighbourhoods');
-	$router->map('GET','/settings/configs', 'components/settings/get.php', 'configs');
-	$router->map('GET','/neighborhoods', 'components/neighborhoods/get.php', 'neighborhoods-all');
-	$router->map('GET','/neighborhoods/[i:id]', 'components/neighborhoods/get.php', 'neighborhood-by-id');
-	
-	// ORDERS (User related / Publicly accessible with or without token as per request)
-	$router->map('GET','/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user');
-	$router->map('GET','/order-user/[i:id]/[a:user]', 'components/orders/get.php', 'order-by-user');
-	$router->map('POST','/order-new', 'components/orders/post.php', 'order-new');
-	
-	// AUTHENTICATION & PROFILE
-	$router->map('POST','/admin-login', 'components/users/post.php', 'admin-login');
-	$router->map('POST','/login', 'components/users/post.php', 'user-login');
-	$router->map('POST','/signup', 'components/users/post.php', 'user-signup');
-	$router->map('POST','/user-new', 'components/users/post.php', 'client-new');
-	$router->map('POST','/update-profile', 'components/users/put.php', 'update-profile');
-	$router->map('POST','/request-code-password', 'components/users/post.php', 'request-code-password');
-	$router->map('POST','/change-password', 'components/users/post.php', 'change-password');
+// ORDERS (User related / Publicly accessible with or without token as per request)
+$router->map('GET', '/orders-user/[i:id]', 'components/orders/get.php', 'orders-by-user');
+$router->map('GET', '/order-user/[i:id]/[a:user]', 'components/orders/get.php', 'order-by-user');
+$router->map('POST', '/order-new', 'components/orders/post.php', 'order-new');
 
-	// --- EXECUTION ---
-	$match = $router->match();
+// AUTHENTICATION & PROFILE
+$router->map('POST', '/admin-login', 'components/users/post.php', 'admin-login');
+$router->map('POST', '/login', 'components/users/post.php', 'user-login');
+$router->map('POST', '/signup', 'components/users/post.php', 'user-signup');
+$router->map('POST', '/user-new', 'components/users/post.php', 'client-new');
+$router->map('POST', '/update-profile', 'components/users/put.php', 'update-profile');
+$router->map('POST', '/request-code-password', 'components/users/post.php', 'request-code-password');
+$router->map('POST', '/change-password', 'components/users/post.php', 'change-password');
 
-	if($match) {
-		require $match['target'];
-	} else {
-		header("HTTP/1.0 404 Not Found");
-		echo json_encode( array("error" => "Error: la ruta solicitada no existe o requiere autenticación.") );
-	}
+// --- EXECUTION ---
+$match = $router->match();
+
+if ($match) {
+	require $match['target'];
+} else {
+	header("HTTP/1.0 404 Not Found");
+	echo json_encode(array("error" => "Error: la ruta solicitada no existe o requiere autenticación."));
+}
 
 
 
